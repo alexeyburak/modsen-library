@@ -1,0 +1,23 @@
+app:
+  eureka-server: discovery
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${app.eureka-server}:8761/eureka/
+    initialInstanceInfoReplicationIntervalSeconds: 5
+    registryFetchIntervalSeconds: 5
+  instance:
+    leaseRenewalIntervalInSeconds: 5
+    leaseExpirationDurationInSeconds: 5
+
+management.endpoint.health.show-details: "ALWAYS"
+management.endpoints.web.exposure.include: "*"
+
+api:
+  common:
+    version: 1.0
+    contact:
+      name: Alexey Burak
+      email: burakalexey@yahoo.com
+      url: https://www.linkedin.com/in/alexey-burak/

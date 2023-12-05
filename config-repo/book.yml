@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/db
+    username: postgres
+    password:
+    driver-class-name: org.postgresql.Driver
+  application.name: book
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server.port: 8080
+
+springdoc:
+  packagesToScan: com.modsen.book
+  api-docs:
+    enabled: true
+    path: /v3/api-docs/book
+  swagger-ui:
+    path: /v3/api-docs/book

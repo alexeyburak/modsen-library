@@ -1,0 +1,17 @@
+server.port: 8080
+server.error.include-message: always
+
+spring.application.name: registration
+
+app.eureka-server: discovery
+
+springdoc:
+  packagesToScan: com.modsen.library.registration
+  api-docs:
+    enabled: true
+    path: /v3/api-docs/registration
+  swagger-ui:
+    path: /v3/api-docs/registration
+
+jwt:
+  secret: WtHW4CuKHPPwgqBRiJnaOwkBPnN1Neeq

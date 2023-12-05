@@ -1,0 +1,111 @@
+version: '3'
+
+services:
+  db-users:
+    container_name: db-users
+    image: postgres:latest
+    ports:
+      - "5444:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: users
+
+  db-books:
+    container_name: db-books
+    image: postgres:latest
+    ports:
+      - "5555:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: books
+
+  config-server:
+    container_name: config-server
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,native
+      - ENCRYPT_KEY=${CONFIG_SERVER_ENCRYPT_KEY}
+      - SPRING_SECURITY_USER_NAME=${CONFIG_SERVER_USR}
+      - SPRING_SECURITY_USER_PASSWORD=${CONFIG_SERVER_PWD}
+    volumes:
+      - $PWD/config-repo:/config-repo
+    ports:
+      - "8888:8888"
+
+  discovery:
+    container_name: discovery
+    build:
+      context: ./discovery
+      dockerfile: Dockerfile
+    depends_on:
+      - config-server
+
+  account:
+    container_name: account
+    build:
+      context: ./account
+      dockerfile: Dockerfile
+    depends_on:
+      - db-users
+      - config-server
+      - discovery
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-users/users
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_SECURITY_USER_NAME: ${CONFIG_SERVER_USR}
+      SPRING_SECURITY_USER_PASSWORD: ${CONFIG_SERVER_PWD}
+
+  book:
+    container_name: book
+    build:
+      context: ./book
+      dockerfile: Dockerfile
+    depends_on:
+      - db-books
+      - config-server
+      - discovery
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-books/books
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_SECURITY_USER_NAME: ${CONFIG_SERVER_USR}
+      SPRING_SECURITY_USER_PASSWORD: ${CONFIG_SERVER_PWD}
+
+  registration:
+    container_name: registration
+    build:
+      context: ./registration
+      dockerfile: Dockerfile
+    depends_on:
+      - config-server
+      - discovery
+    environment:
+      SPRING_SECURITY_USER_NAME: ${CONFIG_SERVER_USR}
+      SPRING_SECURITY_USER_PASSWORD: ${CONFIG_SERVER_PWD}
+
+  gateway:
+    container_name: gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    depends_on:
+      - config-server
+      - discovery
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_SECURITY_USER_NAME=${CONFIG_SERVER_USR}
+      - SPRING_SECURITY_USER_PASSWORD=${CONFIG_SERVER_PWD}
+    volumes:
+      - $PWD/config-repo:/config-repo
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres-data:
